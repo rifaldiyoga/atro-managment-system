@@ -19,7 +19,6 @@ return new class extends Migration
             $table->decimal('selling_price', 15, 2)->nullable(); // HARGA JUAL
             $table->decimal('purchase_price', 15, 2)->nullable(); // HARGA BELI
             $table->foreignId('supplier_id')->nullable()->constrained('business_partners')->onDelete('set null');
-            $table->text('notes')->nullable(); // NOTED
             $table->string('status')->nullable(); // STATUS
             $table->string('dnotes')->nullable(); // STATUS
             $table->decimal('discount', 15, 2)->nullable();

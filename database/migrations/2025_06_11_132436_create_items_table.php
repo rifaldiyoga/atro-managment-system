@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('items', function (Blueprint $table) {
             $table->id();
-            $table->string('code')->unique()->default('AUTO');
+            $table->string('code')->unique();
             $table->string('name');
             // $table->string('unit_1')->default('PCS');
             // $table->string('barcode_1')->nullable();

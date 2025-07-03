@@ -14,12 +14,11 @@ return new class extends Migration
         Schema::create('offer_requests', function (Blueprint $table) {
             $table->id();
             $table->foreignId('customer_id')->constrained('business_partners'); // customer
-            $table->string('offer_number')->unique();
-            $table->date('date');
-            $table->string('phd');
+            $table->date('trxdate');
             $table->string('ph_no');
             $table->string('rfq_number')->nullable();
             $table->string('rfq_duration')->nullable();
+            $table->string('notes')->nullable(); // Note
             $table->timestamps();
         });
     }

@@ -1,10 +1,5 @@
-<x-dynamic-component
-    :component="$getFieldWrapperView()"
-    :field="$field"
->
-    <div class="w-full overflow-x-auto">
-        <div class="min-w-[1500px]">
-            {{ $getChildComponentContainer() }}
-        </div>
+<div class="overflow-x-auto w-full">
+    <div class="min-w-[1400px]">
+        {{ $getChildComponentContainer() }}
     </div>
-</x-dynamic-component>
+</div>

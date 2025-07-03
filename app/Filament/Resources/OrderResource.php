@@ -5,6 +5,10 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\OrderResource\Pages;
 use App\Filament\Resources\OrderResource\RelationManagers;
 use App\Models\Order;
+use App\Models\SalesmanGroup;
+use Awcodes\TableRepeater\Components\TableRepeater;
+use Awcodes\TableRepeater\Header;
+use Carbon\Carbon;
 use Dom\Text;
 use Filament\Actions\Action;
 use Filament\Forms;
@@ -33,6 +37,7 @@ class OrderResource extends Resource
     protected static ?string $navigationLabel = 'Purchase Order';
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $pluralModelLabel = 'Purchase Order';
+    protected static ?string $modelLabel = 'Purchase Order';
 
     public static function form(Form $form): Form
     {
@@ -43,92 +48,118 @@ class OrderResource extends Resource
                         Grid::make(4)->schema([
                             Select::make('customer_id')
                                 ->label('Customer')
-                                ->relationship('customer', 'name')
+                                ->placeholder('Pilih Customer')
+                                // Menambahkan query untuk memfilter berdasarkan partner_type
+                                ->relationship(
+                                    name: 'customer',
+                                    titleAttribute: 'name',
+                                    // Menghapus type hint Builder untuk memperbaiki error
+                                    modifyQueryUsing: fn($query) => $query->where('partner_type', 'customer')
+                                )
                                 ->searchable()
                                 ->required(),
-                            DatePicker::make('trxdate')->label('Tanggal')->required(),
-                            TextInput::make('po_no')->label('No. Purchase Order')->required(),
-                            Placeholder::make('')->content(''),
-
-                            TextInput::make('ph_no')->label('No. Penawaran Harga')->required(),
-
-                            TextInput::make('phd')->numeric()->label('Penawaran Harga & Delivery')->nullable(),
+                            DatePicker::make('trxdate')->label('Tanggal')->required()->default(Carbon::now()),
+                            TextInput::make('po_no')->label('No. Purchase Order')->required()->disabled()->default('AUTO'),
 
 
-                            TextInput::make('rfq_number')->label('RFQ No')->nullable(),
+                            TextInput::make('ph_no')->label('No. Penawaran Harga'),
+
+
+                            TextInput::make('rfq_number')->label('No. RFQ')->nullable(),
                             TextInput::make('rfq_duration')->label('Delivery Time')->nullable(),
+
+                            Select::make('salesman_id')
+                                ->label('Salesmen')
+                                ->placeholder('Pilih Salesmen')
+                                ->relationship(
+                                    name: 'salesman',
+                                    titleAttribute: 'name',
+                                )
+                                ->getOptionLabelFromRecordUsing(function (SalesmanGroup $record) {
+                                    $salesmenNames = $record->salesmen->pluck('name')->implode(', ');
+                                    return "{$record->name} ({$salesmenNames})";
+                                })
+                                ->searchable(),
 
                         ]),
 
-                        Repeater::make('items')
+                        TableRepeater::make('items')
                             ->relationship()
                             ->columnSpanFull()
-
-                            ->label('Daftar Item')
-                            ->schema([
-                                Grid::make()
-                                    ->schema([
-                                        Select::make('item_id')
-                                            ->label('Nama')
-                                            ->relationship('item', 'name')
-                                            ->searchable()
-                                            ->placeholder('Pilih Item')
-                                            ->required(),
-
-                                        TextInput::make('quantity')
-                                            ->label('Qty')
-                                            ->numeric()
-                                            ->required(),
-
-                                        TextInput::make('purchase_price')
-                                            ->label('Harga Beli')
-                                            ->numeric()
-                                            ->required(),
-
-                                        TextInput::make('selling_price')
-                                            ->label('Harga Jual')
-                                            ->numeric()
-                                            ->required(),
-
-                                        TextInput::make('discount')
-                                            ->label('Diskon')
-                                            ->numeric()
-                                            ->nullable(),
-
-                                        Select::make('supplier_id')
-                                            ->label('Supplier')
-                                            ->relationship('supplier', 'name')
-
-                                            ->placeholder('Pilih Supplier')
-                                            ->searchable()
-                                            ->required(),
-
-                                        // Textarea::make('dnotes')
-                                        //     ->label('Keterangan')
-                                        //     ->rows(1),
-
-                                        // FileUpload::make('attachment')
-                                        //     ->label('Attachment')
-                                        //     ->disk('public') // adjust disk as needed
-                                        //     ->directory('attachments')
-                                        //     ->preserveFilenames()
-                                        //     ->nullable(),
-
-                                    ])
-                                    ->columns(6)
-                                    ->extraAttributes(['class' => 'min-w-[1100px]'])
+                            ->default([])
+                            ->label('')
+                            ->headers([
+                                Header::make('Item')->width('200px'),
+                                Header::make('Qty')->width('100px'),
+                                Header::make('Harga Beli')->width('200px'),
+                                Header::make('Harga Jual')->width('200px'),
+                                Header::make('Diskon')->width('100px'),
+                                Header::make('Supplier')->width('150px'),
                             ])
-                            ->columns(1)
+                            ->schema([
+                                Select::make('item_id')
+                                    ->label('Nama')
+                                    ->relationship('item', 'name')
+                                    ->searchable()
+                                    ->placeholder('Pilih Item')
+                                    ->required(),
+
+                                TextInput::make('quantity')
+                                    ->label('Qty')
+                                    ->numeric()
+                                    ->required(),
+
+                                TextInput::make('purchase_price')
+                                    ->label('Harga Beli')
+                                    ->numeric()
+                                    ->required(),
+
+                                TextInput::make('selling_price')
+                                    ->label('Harga Jual')
+                                    ->numeric()
+                                    ->required(),
+
+                                TextInput::make('discount')
+                                    ->label('Diskon')
+                                    ->numeric()
+                                    ->nullable(),
+
+                                Select::make('supplier_id')
+                                    ->label('Supplier')
+                                    ->placeholder('Pilih Supplier')
+                                    // Menambahkan query untuk memfilter berdasarkan partner_type
+                                    ->relationship(
+                                        name: 'supplier',
+                                        titleAttribute: 'name',
+                                        // Menghapus type hint Builder untuk memperbaiki error
+                                        modifyQueryUsing: fn($query) => $query->where('partner_type', 'supplier')
+                                    )
+                                    ->searchable()
+                                    ->required(),
+
+                                // Textarea::make('dnotes')
+                                //     ->label('Keterangan')
+                                //     ->rows(1),
+
+                                // FileUpload::make('attachment')
+                                //     ->label('Attachment')
+                                //     ->disk('public') // adjust disk as needed
+                                //     ->directory('attachments')
+                                //     ->preserveFilenames()
+                                //     ->nullable(),
+
+                            ])
                             ->addActionLabel('Add Item'),
 
                         Grid::make(4)->schema([
                             Textarea::make('notes')
                                 ->label('Keterangan')
-                                ->columnSpan(2)
+                                ->columnSpan(1)
                                 ->rows(4),
+                            // Placeholder::make('')->content(''),
+                            // Placeholder::make('')->content(''),
                             FileUpload::make('attachments')
                                 ->label('Lampiran')
-                                ->required()
                                 ->disk('public')
                                 ->directory('housing-units')
                                 ->openable()

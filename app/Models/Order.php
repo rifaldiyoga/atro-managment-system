@@ -17,6 +17,7 @@ class Order extends Model
         'trxdate',
         'rfq_number',
         'rfq_duration',
+        'salesman_id',
     ];
 
     protected $casts = [
@@ -33,5 +34,10 @@ class Order extends Model
     public function items()
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    public function salesman()
+    {
+        return $this->belongsTo(SalesmanGroup::class);
     }
 }
