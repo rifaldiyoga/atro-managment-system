@@ -10,6 +10,7 @@ class PurchaseOrderDetail extends Model
 
   protected $fillable = [
     'po_id',
+    'so_id',
     'dno',
     'item_id',
     'wh_id',
@@ -41,6 +42,7 @@ class PurchaseOrderDetail extends Model
 
   protected $casts = [
     'dno' => 'integer',
+    'so_id' => 'integer',
     'qty' => 'decimal:4',
     'conv' => 'decimal:4',
     'qtyx' => 'decimal:4',
@@ -66,4 +68,10 @@ class PurchaseOrderDetail extends Model
   {
     return $this->belongsTo(PurchaseOrder::class, 'po_id', 'id');
   }
+
+  public function salesOrder()
+  {
+    return $this->belongsTo(SalesOrder::class, 'so_id', 'id');
+  }
+
 }

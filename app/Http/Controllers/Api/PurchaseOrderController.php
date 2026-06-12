@@ -20,7 +20,12 @@ class PurchaseOrderController extends Controller
     $status = request()->query('status');
     $active = request()->query('active');
 
-    $query = PurchaseOrder::with(['bp', 'srep']);
+    $query = PurchaseOrder::with([
+      'bp',
+      'srep',
+      'details:id,po_id,so_id',
+      'details.salesOrder:id,trxno',
+    ]);
 
     if ($search) {
       $query->where(function ($q) use ($search) {
@@ -62,7 +67,12 @@ class PurchaseOrderController extends Controller
 
   public function show($id)
   {
-    $record = PurchaseOrder::with(['details', 'bp', 'srep', 'attachments'])->find($id);
+    $record = PurchaseOrder::with([
+      'details.salesOrder:id,trxno',
+      'bp',
+      'srep',
+      'attachments'
+    ])->find($id);
     if (!$record) {
       return response()->json([
         'status' => 'error',
