@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\PurchaseReceive;
 use App\Models\PurchaseReceiveDetail;
+use App\Services\AccountingPostingService;
+use App\Services\StockPostingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -119,6 +121,9 @@ class PurchaseReceiveController extends Controller
         }
       }
 
+      app(StockPostingService::class)->postPurchaseReceive($record->load('details'));
+      app(AccountingPostingService::class)->postPurchaseReceive($record->load('details'));
+
       DB::commit();
 
       return response()->json([
@@ -200,6 +205,9 @@ class PurchaseReceiveController extends Controller
         }
       }
 
+      app(StockPostingService::class)->postPurchaseReceive($record->load('details'));
+      app(AccountingPostingService::class)->postPurchaseReceive($record->load('details'));
+
       DB::commit();
 
       return response()->json([
@@ -237,8 +245,12 @@ class PurchaseReceiveController extends Controller
       ], 400);
     }
 
-    $record->isvoid = true;
-    $record->save();
+    DB::transaction(function () use ($record) {
+      app(AccountingPostingService::class)->reverseSource('PRCV', $record->id, now()->toDateTimeString(), "Reverse {$record->trxno}");
+      app(StockPostingService::class)->resetSource('PRCV', $record->id);
+      $record->isvoid = true;
+      $record->save();
+    });
 
     return response()->json([
       'status' => 'success',

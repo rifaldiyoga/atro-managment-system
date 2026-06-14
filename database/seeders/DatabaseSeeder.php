@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
       ItemSeeder::class,            // items
       ItemSupplierSeeder::class,    // itemsupplier → depends on items + bp (VEND)
       RegSeeder::class,             // reg
+      AccountingSeeder::class,      // accgrp → acc → defa
     ]);
   }
 }

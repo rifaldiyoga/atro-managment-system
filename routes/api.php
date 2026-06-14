@@ -22,6 +22,14 @@ Route::middleware('auth:sanctum')->group(function () {
   Route::get('sales-orders/{so}/deliveries', [App\Http\Controllers\Api\DeliveryController::class, 'bySalesOrder']);
   Route::apiResource('sales', App\Http\Controllers\Api\SaleController::class);
   Route::get('sales-orders/{so}/sales', [App\Http\Controllers\Api\SaleController::class, 'bySalesOrder']);
+  Route::apiResource('accounts', App\Http\Controllers\Api\AccountController::class);
+  Route::apiResource('journal-entries', App\Http\Controllers\Api\JournalEntryController::class);
+  Route::post('journal-entries/{journalEntry}/post', [App\Http\Controllers\Api\JournalEntryController::class, 'post']);
+  Route::apiResource('payments', App\Http\Controllers\Api\PaymentController::class);
+  Route::apiResource('stock-movements', App\Http\Controllers\Api\StockMovementController::class)->only(['index', 'store', 'show']);
+  Route::apiResource('stock-balances', App\Http\Controllers\Api\StockBalanceController::class)->only(['index', 'show']);
+  Route::get('accounting-report/{type}', [App\Http\Controllers\Api\AccountingReportController::class, 'getReport']);
+  Route::get('stock-report/{type}', [App\Http\Controllers\Api\StockReportController::class, 'getReport']);
   Route::get('sales-quotation-report/{type}', [App\Http\Controllers\Api\SalesQuotationReportController::class, 'getReport']);
   Route::get('sales-order-report/{type}', [App\Http\Controllers\Api\SalesOrderReportController::class, 'getReport']);
   Route::get('sale-report/{type}', [App\Http\Controllers\Api\SaleReportController::class, 'getReport']);

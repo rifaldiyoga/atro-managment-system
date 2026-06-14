@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Purchase;
 use App\Models\PurchaseDetail;
+use App\Services\AccountingPostingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -120,6 +121,8 @@ class PurchaseController extends Controller
         }
       }
 
+      app(AccountingPostingService::class)->postPurchase($record->load('details'));
+
       DB::commit();
 
       return response()->json([
@@ -201,6 +204,8 @@ class PurchaseController extends Controller
         }
       }
 
+      app(AccountingPostingService::class)->postPurchase($record->load('details'));
+
       DB::commit();
 
       return response()->json([
@@ -238,8 +243,11 @@ class PurchaseController extends Controller
       ], 400);
     }
 
-    $record->isvoid = true;
-    $record->save();
+    DB::transaction(function () use ($record) {
+      app(AccountingPostingService::class)->reverseSource('PURC', $record->id, now()->toDateTimeString(), "Reverse {$record->trxno}");
+      $record->isvoid = true;
+      $record->save();
+    });
 
     return response()->json([
       'status' => 'success',

@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Sale;
 use App\Models\SaleDetail;
 use App\Models\SalesOrder;
+use App\Services\AccountingPostingService;
+use App\Services\StockPostingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -131,6 +133,9 @@ class SaleController extends Controller
         }
       }
 
+      app(StockPostingService::class)->postSale($record->load('details'));
+      app(AccountingPostingService::class)->postSale($record->load('details'));
+
       DB::commit();
 
       return response()->json([
@@ -226,6 +231,9 @@ class SaleController extends Controller
         }
       }
 
+      app(StockPostingService::class)->postSale($record->load('details'));
+      app(AccountingPostingService::class)->postSale($record->load('details'));
+
       DB::commit();
 
       return response()->json([
@@ -263,8 +271,12 @@ class SaleController extends Controller
       ], 400);
     }
 
-    $record->isvoid = true;
-    $record->save();
+    DB::transaction(function () use ($record) {
+      app(AccountingPostingService::class)->reverseSource('SALE', $record->id, now()->toDateTimeString(), "Reverse {$record->trxno}");
+      app(StockPostingService::class)->resetSource('SALE', $record->id);
+      $record->isvoid = true;
+      $record->save();
+    });
 
     return response()->json([
       'status'  => 'success',

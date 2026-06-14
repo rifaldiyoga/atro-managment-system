@@ -1,0 +1,12 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class AccountingSetting extends Model
+{
+  protected $table = 'defa';
+
+  protected $fillable = ['key', 'value', 'note'];
+}
